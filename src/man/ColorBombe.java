@@ -14,22 +14,35 @@ public class ColorBombe extends AdvancedRobot {
 
 	private double lastTurnEnergy = 100;
 	private int moveDirection = 1;
-
-	public void run() {
+	private int graus = 360;
 	
-		// Configuration 
+	/**
+	 * Este metodo faz com que o robot se mova
+	 * e tem as suas configurações iniciais
+	 */
+	
+	public void run() {
 		setRandomColors();
-		setTurnGunRight(360);
+		setTurnGunRight(graus);
 	}
+	
+	/**
+	 * Este metedo é usado quando um robot é detetado no radar.
+	 * Quando encontra um robot vira até ao inimigo para ficar frente a frente.
+	 * Verifica se o inimigo disparou usando a energia para escapar do tiro.
+	 * Apontar a arma, é feito depois do desvio, pois o robot pode ficar numa posicao diferente
+	 * E actualiza a energia
+	 * 
+	 * @param e é um evento para quando um robot é detetado no radar
+	 */
 
 	public void onScannedRobot(ScannedRobotEvent e) {
-		setRandomColors();
+		//setRandomColors();
 
-		// virar o robot até ao inimigo para ficar frente a frente
 		// 90 graus e angulo de 30
 		setTurnRight(e.getBearing()+ 90 - 30 * moveDirection);
 
-		// verificar se o inimigo disparou, para escapar ao tiro
+		
 		double energy = lastTurnEnergy - e.getEnergy();
 		if (energy <= 3 && energy > 0) {
 			// desviar de um tiro
@@ -37,18 +50,25 @@ public class ColorBombe extends AdvancedRobot {
 			setAhead((e.getDistance() / 4 + 25) * moveDirection);
 		}
 
-		// apontar a arma, é feito depois do desvio
-		// pois o robot pode ficar numa posicao diferente
-		setTurnGunRight(360 * -moveDirection);
+		moveDirection=-moveDirection;
+		setTurnGunRight(graus*moveDirection);
 
 		// calcula a intensidade e dispara
 		calcFireRate(e);
 
-		// actualizar a energia do inimigo
 		lastTurnEnergy = e.getEnergy();
 	}
+	
+	/**
+	 * Este metodo calcula a intensidade do tiro de acordo 
+	 * com a distancia em que o robot inimigo se encontra
+	 * 
+	 * Quanto maior a distancia, menos intensidade do tiro
+	 * Quanto menor a distancia, mais intensidade é do tiro 
+	 * 
+	 * @param e é um evento para quando um robot é detetado no radar
+	 */
 
-	// calcula a intensidade do tiro
 	private void calcFireRate(ScannedRobotEvent e) {
 		if (e.getDistance() > getBattleFieldWidth() * 0.8) // 80%
 			fire(0.1);
@@ -59,25 +79,40 @@ public class ColorBombe extends AdvancedRobot {
 		else if (e.getDistance() > getBattleFieldWidth() * 0.1) // 10%
 			fire(3);
 	}
-
-	// quando o robot bate na parede
+	
+	/**
+	 * Quando o robot bate na parede e poder sair
+	 */
 	public void onHitWall(HitWallEvent e) {
 		setTurnRight(100);
 	}
-
-	// quando o robot bate noutro robot
+	
+	
+	/**
+	 * Quando o robot bate noutro robot 
+	 */
 	public void onHitRobot(HitRobotEvent e) {
 		setTurnRight(100);
 	}
 
-	// Quando o robo leva um tiro
+	
+	/**
+	 * Quando o robo leva um tiro
+	 */
 	public void onHitByBullet(HitByBulletEvent e) {
 		setTurnRight(100);
 	}
-
-	// muda aleatoriamente a cor do robot
+	
+	
+	/**
+	 * Este metodo muda de cor aleatoriamente do robot
+	 * usando numero aleatorios entre 0 e 254
+	 * 
+	 * criando cores RGB 
+	 * 
+	 */
 	private void setRandomColors() {
-
+		
 		Random randomGenerator = new Random();
 		int rValue = randomGenerator.nextInt(255);
 		int gValue = randomGenerator.nextInt(255);
